@@ -1,0 +1,10 @@
+{
+    "recommendations": [
+        "ms-python.python",
+        "eamodio.gitlens",
+        "aaron-bond.better-comments",
+        "charliermarsh.ruff",
+        "tamasfe.even-better-toml",
+        "rodolphebarbanneau.python-docstring-highlighter",
+    ]
+}
