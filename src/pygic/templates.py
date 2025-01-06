@@ -80,7 +80,7 @@ class Templates:
             directory (Optional[Union[str, Path]]): The directory containing the gitignore templates.
                 Defaults to None.
                 If provided, the directory should contain the gitignore templates.
-            clone_directory (Optional[Union[str, Path, Literal["default"]]): The directory to clone the
+            clone_directory (Optional[Union[str, Path, Literal["default"]]]): The directory to clone the
                 toptal/gitignore repository to.
                 If "default", the default directory is determined via the `appdirs` library that provides
                 a cross-platform user-specific directory for data storage.
@@ -194,7 +194,7 @@ class Templates:
         # If the directory already exists, we erase it
         if self.directory.exists():
             shutil.rmtree(self.directory)
-        self.directory.mkdir(exist_ok=True)
+        self.directory.mkdir(parents=True, exist_ok=True)
 
         # Clone the toptal/gitignore repository while showing a spinner
         cloning_success = False
@@ -257,16 +257,47 @@ class Templates:
         # And check the validity of the directory
         check_directory_existence_and_validity(self.directory)
 
-    def __get_order_dict(self) -> DefaultDict[str, Union[int, float]]:
+    def __get_order_dict(self) -> DefaultDict[str, int]:
         """Get the order of the gitignore templates.
 
         The order is used when creating a gitignore file with multiple templates.
         The order is determined by the line number in the file, starting from 0.
         Empty lines and comments are ignored.
-        If a template is not found in the `order` file, its priority is set to `float("inf")`.
+        If a template is not found in the `order` file, its priority is unchanged (i.e. 0).
+
+        Example:
+            For this `order` file:
+
+            ```
+            java
+            # gradle needs gradle-wrapper.jar
+            gradle
+
+            # Android Studio needs gradle-wrapper.jar
+            androidstudio
+
+            visualstudio
+            umbraco
+            ```
+
+            The order dictionary will be:
+            ```python
+            {
+                "java": 0,
+                "gradle": 1,
+                "androidstudio": 2,
+                "visualstudio": 3,
+                "umbraco": 4
+            }
+            ```
+
+            And since the order of any other file is 0, Java is sorted in the same way as any other file
+            (i.e., alphabetically), and then, we potentially add at the end of the file Gradle, Android Studio,
+            Visual Studio, and Umbraco (in that order).
+
 
         Returns:
-            DefaultDict[str, Union[int, float]]: A dictionary with the template names as keys (lowercase)
+            DefaultDict[str, int]: A dictionary with the template names as keys (lowercase)
                 and their order index as values.
 
         Raises:
@@ -278,9 +309,7 @@ class Templates:
         if not order_file.exists():
             raise FileNotFoundError(f"File '{order_file}' does not exist.")
 
-        order_dict: DefaultDict[str, Union[int, float]] = defaultdict(
-            lambda: float("inf")
-        )
+        order_dict: DefaultDict[str, int] = defaultdict(int)
         with open(order_file, "r") as f:
             order_idx = 0
             for line in f:
@@ -372,7 +401,7 @@ class Templates:
 
         # Sort the lists alphabetically
         # NOTE: The `lower` is important to sort case-insensitively
-        # Otherwise, for exampe, Z is before a in the ASCII table
+        # Otherwise, for example, Z is before a in the ASCII table
         for file_type in files:
             files[file_type] = sorted(
                 files[file_type], key=lambda file: file.name.lower()
@@ -402,7 +431,7 @@ class Templates:
         The methodology is as follows:
         - Get the order of the gitignore templates.
         - Create the gitignore files from the provided names.
-        - Sort the gitignore names based on their order index.
+        - Sort the gitignore names alphabetically and then based on their order index.
         - Compile the gitignores in the sorted order.
         - Remove duplicated lines from the final gitignore file.
 
@@ -427,13 +456,16 @@ class Templates:
             name.lower(): self.create_one_gitignore(name) for name in names
         }
 
-        # Sort the gitignore names based on their order index
+        # Sort the gitignore names alphabetically and then based on their order index
+        alphabetically_sorted_names = sorted(
+            name.lower() for name in sub_gitignores_dict.keys()
+        )
         sorted_names = sorted(
-            sub_gitignores_dict.keys(), key=lambda name: order_dict[name]
+            alphabetically_sorted_names, key=lambda name: order_dict[name]
         )
 
         # Compile the gitignores in the sorted order
-        gitignore = "\n\n".join(sub_gitignores_dict[name] for name in sorted_names)
+        gitignore = "\n".join(sub_gitignores_dict[name] for name in sorted_names)
 
         gitignore = remove_duplicated_lines(gitignore)
         return gitignore

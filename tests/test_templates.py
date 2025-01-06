@@ -92,6 +92,34 @@ class TestTemplates:
             # Assert that the __clone_toptal_gitignore method was called
             mock_clone_toptal.assert_called_once()
 
+    @pytest.mark.usefixtures("mock_modules")
+    def test__init__clone_nested_directories(
+        self, tmp_path: Path, caplog: pytest.LogCaptureFixture
+    ):
+        nested_dir = tmp_path / "some" / "nested" / "path"
+        # Mock CLONED_TOPTAL_DIR to the nested directory
+        # Mock Repo.clone_from to do nothing
+        # Mock check_directory_existence_and_validity to return True
+        with (
+            caplog.at_level(logging.INFO),
+            patch("pygic.templates.CLONED_TOPTAL_DIR", nested_dir),
+            patch("git.Repo.clone_from", return_value=None),
+            patch(
+                "pygic.templates.check_directory_existence_and_validity",
+                return_value=False,
+            ),
+        ):
+            # Ensure that the directory is empty
+            shutil.rmtree(tmp_path / "some", ignore_errors=True)
+
+            Templates(clone_directory="default")
+
+            # Check the info message
+            assert (
+                f"Cloning the toptal/gitignore repository to: {nested_dir}"
+                in caplog.text
+            )
+
     def test__init__clone_already_cloned(self, caplog: pytest.LogCaptureFixture):
         with (
             caplog.at_level(logging.INFO),
@@ -319,9 +347,9 @@ go
 
         order_dict = templates._Templates__get_order_dict()
 
-        # Verify that the returned object is a defaultdict with default = float('inf')
+        # Verify that the returned object is a defaultdict with default = 0
         assert isinstance(order_dict, defaultdict)
-        assert order_dict.default_factory() == float("inf")
+        assert order_dict.default_factory() == 0
 
         # Verify the order of each listed template
         # Non-comment, non-empty lines in their appearance order:
@@ -331,8 +359,8 @@ go
         assert order_dict["rust"] == 2
         assert order_dict["go"] == 3
 
-        # 'java' is not found, so it should return float("inf")
-        assert order_dict["java"] == float("inf")
+        # 'java' is not found, so it should return 0
+        assert order_dict["java"] == 0
 
     def test_get_order_dict_non_existent_file(self, tmp_path: Path):
         templates = self.setup_templates(tmp_path)
@@ -385,18 +413,73 @@ python
         # Check that the names are sorted
         assert names == sorted(names)
 
-    def test_create_one_gitignore_happy_path(self):
+    @pytest.mark.parametrize(
+        "file",
+        [
+            file
+            for file in (ROOT_DIR / "tests" / "targets").glob("*.gitignore")
+            if "." not in file.stem
+        ],
+    )
+    def test_create_one_gitignore_happy_path(self, file: Path):
         templates = Templates()
-        targets_dir = ROOT_DIR / "tests" / "targets"
-        for file in targets_dir.glob("*.gitignore"):
-            with open(file, "r") as f:
-                content = f.read()
-            file_name = file.stem
-            if "." in file_name:
-                # Here we only test the creation from one name
-                continue
+        with open(file, "r") as f:
+            content = f.read()
+        gitignore = templates.create_one_gitignore(file.stem)
+        assert gitignore == content
+
+    def test_create_one_gitignore_close_match_error(self):
+        templates = Templates()
+        with pytest.raises(
+            FileNotFoundError,
+            match="No template found for 'pyton' regardless of case. Did you mean 'python'?",
+        ):
+            templates.create_one_gitignore("pyton")
+
+    def test_create_one_gitignore_no_match_error(self):
+        templates = Templates()
+        with pytest.raises(FileNotFoundError) as exc_info:
+            templates.create_one_gitignore("you")
+        assert str(exc_info.value) == "No template found for 'you' regardless of case."
+
+    @pytest.mark.parametrize(
+        "file",
+        (ROOT_DIR / "tests" / "targets").glob("*.gitignore"),
+    )
+    def test_create_gitignore_happy_path(self, file: Path):
+        templates = Templates()
+        with open(file, "r") as f:
+            content = f.read()
+        file_name = file.stem
+        if "." in file_name:
+            # We split the multiple names by '.' and test each one
+            names = file_name.split(".")
+            gitignore = templates.create_gitignore(*names)
+        else:
             gitignore = templates.create_gitignore(file_name)
-            assert gitignore == content
+        assert gitignore == content
+
+    def test_create_gitignore_one_template_close_match_error(self):
+        templates = Templates()
+        with pytest.raises(
+            FileNotFoundError,
+            match="No template found for 'pyton' regardless of case. Did you mean 'python'?",
+        ):
+            templates.create_gitignore("pyton")
+
+    def test_create_gitignore_one_template_no_match_error(self):
+        templates = Templates()
+        with pytest.raises(FileNotFoundError) as exc_info:
+            templates.create_gitignore("you")
+        assert str(exc_info.value) == "No template found for 'you' regardless of case."
+
+    def test_create_gitignore_empty_input(self):
+        templates = Templates()
+        with pytest.raises(
+            ValueError,
+            match="You need to provide at least one template for a gitignore to be generated.",
+        ):
+            templates.create_gitignore()
 
 
 #######################################################################################

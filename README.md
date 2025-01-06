@@ -29,6 +29,7 @@
 
 - `pygic` does not support the `autogen` command from `gig` since it is experimental and I don't really see it much use.
 - Similar to `gig`, the content of the gitignores match the ones from gitignore.io, except for the order of the stacks which is not standardized by gitignore.io. Here, we choose the alphabetical order.
+- Finally `pygic` fixes what seems to be a small bug in gitignore.io's implementation where they remove all duplicated lines in the generated gitignores, even in comments. `pygic` only removes uncommented duplicated lines.
 
 # Install
 

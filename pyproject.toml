@@ -9,6 +9,7 @@ requires-python = ">=3.10"
 dependencies = [
     "click-help-colors>=0.9.4",
     "click>=8.1.7",
+    "termcolor>=2.3.0",
 ]
 
 [project.scripts]
