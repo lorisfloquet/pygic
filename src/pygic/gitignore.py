@@ -510,7 +510,7 @@ class Gitignore:
 
         return selected_names
 
-    def search_and_create(self) -> str:
+    def search_and_create(self) -> Optional[str]:
         """Search for templates and create a gitignore file from the selected ones.
 
         `pzp` is used to search for the templates.
@@ -518,7 +518,7 @@ class Gitignore:
         The search stops when the user presses ESC, CTRL-C, CTRL-G, or CTRL-Q.
 
         Returns:
-            str: The content of the gitignore file.
+            Optional[str]: The content of the gitignore file., or None if no template is selected.
 
         Raises:
             ModuleNotFoundError: If `pygic` was not installed with the [search] extra,
@@ -526,9 +526,10 @@ class Gitignore:
         """
         selected_names = self.__search_names()
         if not selected_names:
-            raise ValueError(
+            logger.info(
                 "You need to select at least one template for a gitignore to be generated."
             )
+            return None
         return self.create(*selected_names)
 
 

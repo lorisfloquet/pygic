@@ -16,16 +16,11 @@ def verbose_option(func: Callable) -> Callable:
 @click.group(
     cls=HelpColorsGroup, help_headers_color="yellow", help_options_color="green"
 )
-@click.version_option()
+@click.version_option()  # Allow the `--version` option to print the version
 @click.pass_context  # Pass the click context to the function
 @verbose_option
 def pygic(ctx: click.Context, verbose: int):
     """pygic CLI - A tool for generating gitignores."""
-
-    # If no subcommand is provided, print the help message and exit.
-    if ctx.invoked_subcommand is None:
-        click.echo(ctx.get_help())
-        ctx.exit()
 
     import logging
 
@@ -99,7 +94,9 @@ def gen(
         ignore_num_files_check=ignore_num_files_check,
     )
 
-    templates.create(names)
+    gitignore = templates.create(*names)
+
+    click.echo(gitignore, nl=False)
 
 
 @pygic.command(help="Detect tools/languages and generate a .gitignore.")
@@ -141,7 +138,7 @@ def search(
 
     gitignore = templates.search_and_create()
 
-    click.echo(gitignore)
+    click.echo(gitignore, nl=False)
 
 
 if __name__ == "__main__":

@@ -110,7 +110,7 @@ $ pygic autogen
 ## For more information, see
 
 ```
-pygic --help
+$ pygic --help
 ```
 
 # Development
@@ -119,9 +119,9 @@ pygic --help
 
 This project uses `uv` as virtual environment and package manager.
 
-To contribute, all you have to do is, clone then:
+To contribute, all you have to do is clone, then run:
 
 ```bash
 uv venv
-uv sync
+uv sync --all-extras --all-groups
 ```

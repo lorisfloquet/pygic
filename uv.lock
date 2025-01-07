@@ -578,6 +578,7 @@ search = [
 dev = [
     { name = "icecream" },
     { name = "ipykernel" },
+    { name = "pexpect" },
     { name = "pytest" },
     { name = "pytest-cov" },
 ]
@@ -603,6 +604,7 @@ requires-dist = [
 dev = [
     { name = "icecream", specifier = ">=2.1.3" },
     { name = "ipykernel", specifier = ">=6.29.5" },
+    { name = "pexpect", specifier = ">=4.9.0" },
     { name = "pytest", specifier = ">=8.3.3" },
     { name = "pytest-cov", specifier = ">=5.0.0" },
 ]

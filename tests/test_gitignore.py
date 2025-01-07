@@ -446,7 +446,7 @@ python
         "file",
         (ROOT_DIR / "tests" / "targets").glob("*.gitignore"),
     )
-    def test_create_gitignore_happy_path(self, file: Path):
+    def test_create_happy_path(self, file: Path):
         templates = Gitignore()
         with open(file, "r") as f:
             content = f.read()
@@ -459,7 +459,7 @@ python
             gitignore = templates.create(file_name)
         assert gitignore == content
 
-    def test_create_gitignore_one_template_close_match_error(self):
+    def test_create_one_template_close_match_error(self):
         templates = Gitignore()
         with pytest.raises(
             FileNotFoundError,
@@ -467,13 +467,13 @@ python
         ):
             templates.create("pyton")
 
-    def test_create_gitignore_one_template_no_match_error(self):
+    def test_create_one_template_no_match_error(self):
         templates = Gitignore()
         with pytest.raises(FileNotFoundError) as exc_info:
             templates.create("you")
         assert str(exc_info.value) == "No template found for 'you' regardless of case."
 
-    def test_create_gitignore_empty_input(self):
+    def test_create_empty_input(self):
         templates = Gitignore()
         with pytest.raises(
             ValueError,
