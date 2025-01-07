@@ -90,16 +90,16 @@ def gen(
 ):
     """Generate a gitignore file using the template of the given NAMES."""
 
-    from pygic import Templates
+    from pygic import Gitignore
 
-    templates = Templates(
+    templates = Gitignore(
         directory=directory,
         clone_directory=clone,
         force_clone=force_clone,
         ignore_num_files_check=ignore_num_files_check,
     )
 
-    templates.create_gitignore(names)
+    templates.create(names)
 
 
 @pygic.command(help="Detect tools/languages and generate a .gitignore.")
@@ -130,9 +130,9 @@ def search(
     and generate a gitignore file using the selected templates.
     """
 
-    from pygic import Templates
+    from pygic import Gitignore
 
-    templates = Templates(
+    templates = Gitignore(
         directory=directory,
         clone_directory=clone,
         force_clone=force_clone,

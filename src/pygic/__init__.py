@@ -1,3 +1,3 @@
-from .templates import Templates
+from .gitignore import Gitignore
 
-__all__ = ["Templates"]
+__all__ = ["Gitignore"]

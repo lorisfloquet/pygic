@@ -33,7 +33,7 @@ CLONED_TOPTAL_DIR: Optional[Path] = __CLONED_TOPTAL_DIR
 None if `pygic` was not installed with the [git] extra."""
 
 
-class Templates:
+class Gitignore:
     """Class to manage the gitignore templates.
 
     The templates are stored in the `directory` directory.
@@ -53,7 +53,7 @@ class Templates:
     This class provides 4 main functionalities:
     - `list_template_names()`: List the names of the available templates.
     - `create_one_gitignore(name)`: Create a gitignore file from a single template.
-    - `create_gitignore(*names)`: Create a gitignore file from multiple templates.
+    - `create(*names)`: Create a gitignore file from multiple templates.
     - `search_and_create()`: Search for templates and create a gitignore file from the selected ones.
 
     Attributes:
@@ -70,7 +70,7 @@ class Templates:
         force_clone: bool = False,
         ignore_num_files_check: bool = False,
     ) -> None:
-        """Initialize the `Templates` class.
+        """Initialize the `Gitignore` class.
 
         The `directory` and `clone_directory` arguments are mutually exclusive.
         If both are provided, `directory` is used and `clone_directory` is ignored.
@@ -425,7 +425,7 @@ class Templates:
         gitignore = remove_duplicated_lines(gitignore)
         return gitignore
 
-    def create_gitignore(self, *names: str) -> str:
+    def create(self, *names: str) -> str:
         """Create a gitignore file from multiple templates.
 
         The methodology is as follows:
@@ -529,7 +529,7 @@ class Templates:
             raise ValueError(
                 "You need to select at least one template for a gitignore to be generated."
             )
-        return self.create_gitignore(*selected_names)
+        return self.create(*selected_names)
 
 
 def check_directory_existence_and_validity(
@@ -538,7 +538,7 @@ def check_directory_existence_and_validity(
     ignore_num_files: bool = False,
     raise_if_not_exist_or_empty: bool = True,
 ) -> bool:
-    """Check if the directory is valid for the `Templates` class.
+    """Check if the directory is valid for the `Gitignore` class.
 
     The directory should only contain the following files:
     - `order`: A file that contains the order of the gitignore templates.

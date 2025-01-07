@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 
 from pygic.file import File, FileType
-from pygic.templates import TEMPLATES_LOCAL_DIR
+from pygic.gitignore import TEMPLATES_LOCAL_DIR
 
 
 class TestFileType:
