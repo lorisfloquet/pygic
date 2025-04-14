@@ -1,7 +1,6 @@
 from typing import Callable, Tuple
 
-import click
-from click_help_colors import HelpColorsGroup
+import rich_click as click
 
 
 def verbose_option(func: Callable) -> Callable:
@@ -13,9 +12,7 @@ def verbose_option(func: Callable) -> Callable:
     )(func)
 
 
-@click.group(
-    cls=HelpColorsGroup, help_headers_color="yellow", help_options_color="green"
-)
+@click.group()
 @click.version_option()  # Allow the `--version` option to print the version
 @click.pass_context  # Pass the click context to the function
 @verbose_option
@@ -58,7 +55,7 @@ def directory_option(func: Callable) -> Callable:
     return click.option(
         "--directory",
         default=None,
-        help="Directory to generate the .gitignore file in.",
+        help="Directory containing local .gitignore files.",
     )(func)
 
 
@@ -99,18 +96,6 @@ def gen(
     click.echo(gitignore, nl=False)
 
 
-@pygic.command(help="Detect tools/languages and generate a .gitignore.")
-@clone_option
-@force_clone_option
-@directory_option
-@ignore_num_files_check_option
-def autogen(
-    clone: str, force_clone: bool, directory: str, ignore_num_files_check: bool
-):
-    """Automatically detect the programming languages and tools used in the current project"""
-    click.echo("The autogen command is not yet implemented.")
-
-
 @pygic.command(help="Search for templates and generate a .gitignore.")
 @clone_option
 @force_clone_option
@@ -142,7 +127,4 @@ def search(
 
 
 if __name__ == "__main__":
-    import logging
-
-    logging.basicConfig(level=logging.INFO)
     pygic()

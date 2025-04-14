@@ -1,6 +1,5 @@
 from enum import Enum
 from pathlib import Path
-from typing import List
 
 
 class FileType(str, Enum):
@@ -27,7 +26,7 @@ class FileType(str, Enum):
     """
 
     @classmethod
-    def values(cls) -> List[str]:
+    def values(cls) -> list[str]:
         """Get the possible FileType values as a list of strings."""
         return [item.value for item in cls]
 
@@ -64,7 +63,7 @@ class File:
         """Get the content of the file as a string.
 
         NOTE: The content is not stored in memory, so the file is read every time this method is called.
-            This is the wanted behavior since `pygic` is a CLI tool and the templates are not expected to be
+            This is the desired behavior since `pygic` is a CLI tool and the templates are not expected to be
             read multiple times in a single run.
         """
         with open(self.path, "r") as f:

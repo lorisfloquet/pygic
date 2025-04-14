@@ -16,7 +16,6 @@ def test_cli_help():
     result = runner.invoke(pygic, ["--help"])
     assert result.exit_code == 0
     assert "pygic CLI - A tool for generating gitignores." in result.output
-    assert "Commands:" in result.output
 
 
 @pytest.mark.parametrize(

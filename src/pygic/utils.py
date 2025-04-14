@@ -1,7 +1,6 @@
 import logging
 import sys
 from enum import Enum
-from typing import Optional, Union
 
 from termcolor import colored
 
@@ -37,11 +36,11 @@ class LoggingLevel(Enum):
     CRITICAL: int = logging.CRITICAL
 
 
-def setup_logging(log_level: Optional[Union[LoggingLevel, int]] = None) -> None:
+def setup_logging(log_level: LoggingLevel | int | None = None) -> None:
     """Setup logging for the application.
 
     Args:
-        log_level (Optional[Union[LoggingLevel, int]], optional): The log level to set.
+        log_level (LoggingLevel | int | None, optional): The log level to set.
             If None, the default logging level is WARNING. Defaults to None.
     """
 

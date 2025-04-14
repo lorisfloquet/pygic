@@ -3,21 +3,29 @@ import logging
 import shutil
 from collections import defaultdict
 from pathlib import Path
-from typing import DefaultDict, Dict, List, Literal, Optional, Union
+from typing import Literal
 
-from pygic.config import AUTHOR, ROOT_DIR, TOPTAL_REPO_URL, VERSION
+from pygic.config import AUTHOR, PACKAGE_DIR, ROOT_DIR, TOPTAL_REPO_URL, VERSION
 from pygic.file import File, FileType
 
 logger = logging.getLogger(__name__)
 
-TEMPLATES_LOCAL_DIR = ROOT_DIR / "src/pygic/templates"
+# Check if we're using a development or installed directory structure
+if PACKAGE_DIR is None:
+    # Development structure
+    _TEMPLATES_LOCAL_DIR = ROOT_DIR / "src/pygic/templates"
+else:
+    # Installed package structure
+    _TEMPLATES_LOCAL_DIR = PACKAGE_DIR / "templates"
+
+TEMPLATES_LOCAL_DIR = _TEMPLATES_LOCAL_DIR
 """The directory (absolute path) of the pre-downloaded gitignore templates from the toptal/gitignore repository."""
 
 try:
     import appdirs  # type: ignore
 
     # We use this intermediate variable to have docstring typing on the CLONED_TOPTAL_DIR variable
-    __CLONED_TOPTAL_DIR: Optional[Path] = Path(
+    __CLONED_TOPTAL_DIR: Path | None = Path(
         appdirs.user_data_dir("pygic", AUTHOR, VERSION)
     )
 
@@ -26,9 +34,9 @@ except ModuleNotFoundError:
         "`appdirs` is not installed, cloning with git won't be available. "
         "If you want this feature, install `pygic` with the [git] extra or the [dulwich] extra."
     )
-    __CLONED_TOPTAL_DIR: Optional[Path] = None
+    __CLONED_TOPTAL_DIR: Path | None = None
 
-CLONED_TOPTAL_DIR: Optional[Path] = __CLONED_TOPTAL_DIR
+CLONED_TOPTAL_DIR: Path | None = __CLONED_TOPTAL_DIR
 """The directory (absolute path) of the cloned toptal/gitignore repository.
 None if `pygic` was not installed with the [git] extra."""
 
@@ -64,9 +72,9 @@ class Gitignore:
 
     def __init__(
         self,
-        directory: Optional[Union[str, Path]] = None,
+        directory: str | Path | None = None,
         *,
-        clone_directory: Optional[Union[str, Path, Literal["default"]]] = None,
+        clone_directory: str | Path | Literal["default"] | None = None,
         force_clone: bool = False,
         ignore_num_files_check: bool = False,
     ) -> None:
@@ -77,10 +85,10 @@ class Gitignore:
         If both are None, the default local templates are used.
 
         Args:
-            directory (Optional[Union[str, Path]]): The directory containing the gitignore templates.
+            directory (str | Path | None): The directory containing the gitignore templates.
                 Defaults to None.
                 If provided, the directory should contain the gitignore templates.
-            clone_directory (Optional[Union[str, Path, Literal["default"]]]): The directory to clone the
+            clone_directory (str | Path | Literal["default"] | None): The directory to clone the
                 toptal/gitignore repository to.
                 If "default", the default directory is determined via the `appdirs` library that provides
                 a cross-platform user-specific directory for data storage.
@@ -257,7 +265,7 @@ class Gitignore:
         # And check the validity of the directory
         check_directory_existence_and_validity(self.directory)
 
-    def __get_order_dict(self) -> DefaultDict[str, int]:
+    def __get_order_dict(self) -> defaultdict[str, int]:
         """Get the order of the gitignore templates.
 
         The order is used when creating a gitignore file with multiple templates.
@@ -297,7 +305,7 @@ class Gitignore:
 
 
         Returns:
-            DefaultDict[str, int]: A dictionary with the template names as keys (lowercase)
+            defaultdict[str, int]: A dictionary with the template names as keys (lowercase)
                 and their order index as values.
 
         Raises:
@@ -309,7 +317,7 @@ class Gitignore:
         if not order_file.exists():
             raise FileNotFoundError(f"File '{order_file}' does not exist.")
 
-        order_dict: DefaultDict[str, int] = defaultdict(int)
+        order_dict: defaultdict[str, int] = defaultdict(int)
         with open(order_file, "r") as f:
             order_idx = 0
             for line in f:
@@ -326,7 +334,7 @@ class Gitignore:
 
         return order_dict
 
-    def list_template_names(self) -> List[str]:
+    def list_template_names(self) -> list[str]:
         """List the names of the available templates, sorted alphabetically."""
         return sorted([file.stem for file in self.directory.glob("*.gitignore")])
 
@@ -394,7 +402,7 @@ class Gitignore:
 
         # We use List[File] and not just one File to account for the case when there are multiple patches
         # Example: ReactNative.Android.stack, ReactNative.Linux.stack, etc.
-        files: DefaultDict[FileType, List[File]] = defaultdict(list)
+        files: defaultdict[FileType, list[File]] = defaultdict(list)
         for file_path in file_paths:
             file = File(file_path)
             files[file.type].append(file)
@@ -451,8 +459,8 @@ class Gitignore:
             )
 
         # Get the order of the gitignore templates
-        order_dict: DefaultDict[str, Union[int, float]] = self.__get_order_dict()
-        sub_gitignores_dict: Dict[str, str] = {
+        order_dict: defaultdict[str, int | float] = self.__get_order_dict()
+        sub_gitignores_dict: dict[str, str] = {
             name.lower(): self.create_one_gitignore(name) for name in names
         }
 
@@ -470,7 +478,7 @@ class Gitignore:
         gitignore = remove_duplicated_lines(gitignore)
         return gitignore
 
-    def __search_names(self) -> List[str]:
+    def __search_names(self) -> list[str]:
         """Search for templates and return the selected names.
 
         `pzp` is used to search for the templates.
@@ -478,7 +486,7 @@ class Gitignore:
         The search stops when the user presses ESC, CTRL-C, CTRL-G, or CTRL-Q.
 
         Returns:
-            List[str]: The selected names.
+            list[str]: The selected names.
 
         Raises:
             ModuleNotFoundError: If `pygic` was not installed with the [search] extra,
@@ -492,7 +500,7 @@ class Gitignore:
             ) from e
 
         candidates = self.list_template_names()
-        selected_names: List[str] = []
+        selected_names: list[str] = []
 
         while True:
             name = pzp(
@@ -510,7 +518,7 @@ class Gitignore:
 
         return selected_names
 
-    def search_and_create(self) -> Optional[str]:
+    def search_and_create(self) -> str | None:
         """Search for templates and create a gitignore file from the selected ones.
 
         `pzp` is used to search for the templates.
