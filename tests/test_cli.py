@@ -68,7 +68,7 @@ def test_cli_pygic_search_names_interactively(tmp_path: Path):
     """
 
     child = pexpect.spawn(
-        f"{sys.executable} src/pygic/cli.py search", env={"FORCE_COLOR": "0"}
+        f"{sys.executable} pygic/cli.py search", env={"FORCE_COLOR": "0"}
     )
 
     print(colored("Process started", "light_green", attrs=["bold"]))

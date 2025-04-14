@@ -14,7 +14,7 @@ except ImportError:
     PACKAGE_DIR = None
 
 
-ROOT_DIR = Path(__file__).parents[2]
+ROOT_DIR = Path(__file__).parents[1]
 """The root directory of the project in absolute path."""
 
 AUTHOR = "Loris FLOQUET"

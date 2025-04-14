@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 # Check if we're using a development or installed directory structure
 if PACKAGE_DIR is None:
     # Development structure
-    _TEMPLATES_LOCAL_DIR = ROOT_DIR / "src/pygic/templates"
+    _TEMPLATES_LOCAL_DIR = ROOT_DIR / "pygic/templates"
 else:
     # Installed package structure
     _TEMPLATES_LOCAL_DIR = PACKAGE_DIR / "templates"

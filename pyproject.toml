@@ -54,9 +54,9 @@ requires=["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/pygic"]
+packages = ["pygic"]
 
 [tool.hatch.build]
 include = [
-    "src/pygic/templates/**",
+    "pygic/templates/**",
 ]
